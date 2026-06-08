@@ -1,8 +1,6 @@
 # Credit Risk Modeling (CRM) - PD · LGD · EAD · Expected Loss
-This was the most complex project so far. It required not only advanced Python skills but also deep statistical knowledge to conduct comprehensive Credit Risk Modeling.
 
-> End-to-end credit risk model built on the **LendingClub 2007–2014** dataset (~466k loans).  
-> Implements all three Basel II pillars of Expected Loss: Probability of Default, Loss Given Default, and Exposure at Default.
+> As my most challenging and complex project to date, this required a powerful combination of Python expertise and rigorous statistical theory to deliver an end-to-end Credit Risk Model. Built on the LendingClub 2007–2014 dataset (~466k loans), it comprehensively implements all three Basel II pillars of Expected Loss: Probability of Default (PD), Loss Given Default (LGD), and Exposure at Default (EAD)
 
 ---
 
