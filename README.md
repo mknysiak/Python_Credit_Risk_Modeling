@@ -2,6 +2,8 @@
 
 > As my most challenging and complex project to date, this required a powerful combination of Python expertise and rigorous statistical theory to deliver an end-to-end Credit Risk Model. Built on the LendingClub 2007–2014 dataset (~466k loans), it comprehensively implements all three Basel II pillars of Expected Loss: Probability of Default (PD), Loss Given Default (LGD), and Exposure at Default (EAD)
 
+> **Dataset:** [LendingClub Loan Data 2007–2014](https://www.kaggle.com/datasets/wordsforthewise/lending-club) on Kaggle (~466k rows, ~75 features)
+
 ---
 
 ## 📌 Project Overview
@@ -181,8 +183,8 @@ loan_data['EL'] = loan_data['PD'] * loan_data['LGD'] * loan_data['EAD']
 |--------|---------|
 | `PD` | Probability the borrower defaults |
 | `LGD` | Fraction of EAD that won't be recovered |
-| `EAD` | Dollar amount at risk at time of default |
-| `EL` | Expected dollar loss per loan |
+| `EAD` | Amount at risk at time of default |
+| `EL` | Expected loss per loan |
 
 ---
 
@@ -202,29 +204,6 @@ loan_data['EL'] = loan_data['PD'] * loan_data['LGD'] * loan_data['EAD']
 | `scipy.stats` | p-value computation |
 | `matplotlib` / `seaborn` | WoE plots, ROC curves |
 | `pickle` | Model serialisation |
-
----
-
-## 🚀 How to Run
-
-```bash
-# 1. Clone the repo
-git clone https://github.com/your-username/credit-risk-model.git
-cd credit-risk-model
-
-# 2. Install dependencies
-pip install pandas numpy scikit-learn scipy matplotlib seaborn jupyter
-
-# 3. Place the dataset
-# Download loan_data_2007_2014.csv and put it in the project root
-
-# 4. Run in order
-jupyter notebook CRM_Data_Prep.ipynb    # generates train/test CSVs
-jupyter notebook CRM_PD_Model.ipynb     # trains PD model, saves pd_model.sav
-jupyter notebook CRM_LGD_EAD.ipynb      # trains LGD/EAD, computes Expected Loss
-```
-
-> **Dataset:** [LendingClub Loan Data 2007–2014](https://www.kaggle.com/datasets/wordsforthewise/lending-club) on Kaggle (~466k rows, ~75 features)
 
 ---
 
