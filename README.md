@@ -1,4 +1,5 @@
-# Credit Risk Modeling (CRM) — PD · LGD · EAD · Expected Loss
+# Credit Risk Modeling (CRM) - PD · LGD · EAD · Expected Loss
+This was the most complex project so far. It required not only advanced Python skills but also deep statistical knowledge to conduct comprehensive Credit Risk Modeling.
 
 > End-to-end credit risk model built on the **LendingClub 2007–2014** dataset (~466k loans).  
 > Implements all three Basel II pillars of Expected Loss: Probability of Default, Loss Given Default, and Exposure at Default.
@@ -9,9 +10,9 @@
 
 | Component | Method | Output |
 |-----------|--------|--------|
-| **PD** — Probability of Default | Logistic Regression + WoE Binning | Score 300–850 + Default probability |
-| **LGD** — Loss Given Default | Two-stage: Logistic → Linear Regression | Recovery rate [0, 1] |
-| **EAD** — Exposure at Default | Linear Regression (CCF) | Remaining exposure [0, funded amount] |
+| **PD** - Probability of Default | Logistic Regression + WoE Binning | Score 300–850 + Default probability |
+| **LGD** - Loss Given Default | Two-stage: Logistic → Linear Regression | Recovery rate [0, 1] |
+| **EAD** - Exposure at Default | Linear Regression (CCF) | Remaining exposure [0, funded amount] |
 | **Expected Loss** | EL = PD × LGD × EAD | Dollar value at risk |
 
 ---
@@ -22,6 +23,7 @@
 ├── CRM_Data_Prep.ipynb      # Feature engineering, WoE binning, train/test split
 ├── CRM_PD_Model.ipynb       # PD model, scorecard, AUROC / Gini / KS evaluation
 ├── CRM_LGD_EAD.ipynb        # LGD (2-stage) + EAD model, Expected Loss calculation
+├── CRM_Variables.ipynb      # Features and Categories to build models
 └── README.md
 ```
 
@@ -33,34 +35,34 @@
 Raw CSV (466k loans)
         │
         ▼
-┌──────────────────┐
-│   Data Prep      │  Date parsing · Dummy encoding · WoE binning
-│  (Data_Prep.ipynb)│  NaN imputation · Train/test split (80/20, stratified)
-└────────┬─────────┘
-         │
-    ┌────┴────┐
-    ▼         ▼
+┌───────────────────┐
+│  Data Prep        │  Date parsing · Dummy encoding · WoE binning
+│ (Data_Prep.ipynb) │  NaN imputation · Train/test split (80/20, stratified)
+└─────────┬─────────┘
+          │
+    ┌─────┴──────┐
+    ▼            ▼
  PD Model   LGD + EAD Model
-    │              │
-    └──────┬───────┘
+    │            │
+    └──────┬─────┘
            ▼
     Expected Loss = PD × LGD × EAD
 ```
 
 ---
 
-## 1️⃣ Data Preparation — Feature Engineering
+## 1️⃣ Data Preparation - Feature Engineering
 
 The raw dataset contains mixed types (strings, dates, categoricals). Key transformations:
 
-**Date features** — converted to "months since" relative to reference date:
+**Date features** - converted to "months since" relative to reference date:
 ```python
 loan_data['mths_since_issue_d'] = np.floor(
     (pd.to_datetime('2026-01-01') - loan_data['issue_d']).dt.days / 30.44
 )
 ```
 
-**Weight of Evidence (WoE) binning** — all continuous variables are discretised into bins optimised by WoE before model training. The WoE framework quantifies how strongly each bin predicts default:
+**Weight of Evidence (WoE) binning** - all continuous variables are discretised into bins optimised by WoE before model training. The WoE framework quantifies how strongly each bin predicts default:
 
 | IV Range | Predictive Power |
 |----------|-----------------|
@@ -84,7 +86,7 @@ loan_data['mths_since_issue_d'] = np.floor(
 
 ---
 
-## 2️⃣ PD Model — Probability of Default
+## 2️⃣ PD Model - Probability of Default
 
 **Target variable:** `good_bad` (1 = good borrower, 0 = defaulted)
 
@@ -124,35 +126,35 @@ Higher score = lower default probability.
 |--------|-----------|
 | AUROC | > 0.7 = good model |
 | Gini | `2 × AUROC − 1` |
-| KS Statistic | Max separation between Good/Bad CDFs |
+| KS Statistic | Peak distance between Good and Bad cumulative curves |
 
 ---
 
-## 3️⃣ LGD Model — Loss Given Default
+## 3️⃣ LGD Model - Loss Given Default
 
 Trained only on **defaulted loans** (`Charged Off`).
 
-**Target:** `recovery_rate = recoveries / funded_amount` — capped to [0, 1]
+**Target:** `recovery_rate = recoveries / funded_amount` - capped to [0, 1]
 
 Two-stage model (Beta regression approximation in Python):
 
 ```
-Stage 1 — Logistic Regression
+Stage 1 - Logistic Regression
     Is recovery_rate > 0?
     → Predicts probability of any recovery
 
-Stage 2 — Linear Regression
+Stage 2 - Linear Regression
     Given recovery_rate > 0, what is the actual rate?
     → Trained only on loans with positive recovery
 
 LGD = 1 − (Stage1_prediction × Stage2_prediction)
 ```
 
-This approach handles the spike at 0 in the recovery rate distribution — a common characteristic of LGD data.
+This approach handles the spike at 0 in the recovery rate distribution - a common characteristic of LGD data.
 
 ---
 
-## 4️⃣ EAD Model — Exposure at Default
+## 4️⃣ EAD Model - Exposure at Default
 
 **Target:** Credit Conversion Factor `CCF = (funded_amount − total_principal_received) / funded_amount`
 
@@ -167,7 +169,7 @@ loan_data_defaults['CCF'] = (
 loan_data['EAD'] = loan_data['CCF'] * loan_data['funded_amnt']
 ```
 
-Linear regression is used directly (no two-stage needed — CCF is more uniformly distributed than recovery rate).
+Linear regression is used directly (no two-stage needed - CCF is more uniformly distributed than recovery rate).
 
 ---
 
@@ -243,8 +245,8 @@ jupyter notebook CRM_LGD_EAD.ipynb      # trains LGD/EAD, computes Expected Loss
 
 ## 📝 Known Limitations & Future Improvements
 
-- **Beta regression for LGD** — the two-stage OLS approximation works but a proper Beta regression (available in R's `betareg`) would model the [0,1] bounded distribution more precisely.
-- **Time-based validation** — current split is random; a vintage-based split (train on older loans, test on newer) would better simulate real deployment.
-- **Feature leakage risk** — some features (`int_rate`, `grade`) are set by the lender partly based on creditworthiness, introducing potential endogeneity.
-- **WoE bins are static** — bins were determined manually from fine classing; automating this with monotonicity constraints would improve reproducibility.
+- **Beta regression for LGD** - the two-stage OLS approximation works but a proper Beta regression (available in R's `betareg`) would model the [0,1] bounded distribution more precisely.
+- **Time-based validation** - current split is random; a vintage-based split (train on older loans, test on newer) would better simulate real deployment.
+- **Feature leakage risk** - some features (`int_rate`, `grade`) are set by the lender partly based on creditworthiness, introducing potential endogeneity.
+- **WoE bins are static** - bins were determined manually from fine classing; automating this with monotonicity constraints would improve reproducibility.
 
